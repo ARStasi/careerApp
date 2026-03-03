@@ -1,0 +1,25 @@
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# Node / frontend build output
+node_modules/
+dist/
+coverage/
+
+# Environment and local config
+.env
+.env.*
+*.local
+
+# Local databases and generated artifacts
+*.db
+*.sqlite
+tailored-resumes/*.docx
+!tailored-resumes/.gitkeep
