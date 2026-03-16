@@ -6,7 +6,7 @@ Tailor the user's resume to a specific job requisition so it passes ATS and appe
 ## Process (two phases, always in order)
 
 **Phase 1 — Analysis (always runs first)**
-1. Collect the user's materials (experience, accomplishments, skills, awards, talks, certifications, etc.).
+1. Collect the user's materials (experience, accomplishments, skills, awards, talks, certifications, publications, patents, volunteer work, etc.).
 2. Collect the job requisition details.
 3. Output the Analysis (Markdown only, no YAML) using the template below, including clarifying questions.
 4. Wait for the user to review the analysis and answer questions.
@@ -77,7 +77,9 @@ Output only Markdown with this structure:
 
 ## Keyword Coverage
 Covered <n>/<total> (<percent>%).
-**Missing terms:** <comma-separated list>
+**Tier 1 (core technical/domain — high ATS weight):** <matched>/<total> — <list missing>
+**Tier 2 (supporting skills/tools — moderate weight):** <matched>/<total> — <list missing>
+**Tier 3 (soft skills/general — low weight):** <matched>/<total> — <list missing>
 
 ## Gaps
 - <gap 1>
@@ -104,56 +106,83 @@ Assign a holistic 0–100 fit score considering: how many Required qualification
 - **Partial:** Related exposure or adjacent skill, but not at the depth/scope/recency implied.
 - **Missing:** No truthful evidence in the provided materials.
 
+### Keyword coverage — tiered weighting
+Build a unique keyword list from Required + Preferred qualifications, then assign each keyword to a tier:
+- **Tier 1 — Core technical/domain skills:** Technologies, platforms, frameworks, domain expertise, or methodologies that appear in Required qualifications or are named in core responsibilities. These carry the highest ATS weight.
+- **Tier 2 — Supporting skills/tools:** Secondary tools, adjacent technologies, or processes mentioned in Preferred qualifications or supporting responsibilities. Moderate ATS weight.
+- **Tier 3 — Soft skills/general:** Communication, leadership, collaboration, and other non-technical competencies. Low ATS weight; useful for human reviewers but rarely gatekeeping in ATS.
+
+Match multi-word phrases as phrases before single tokens. Credit common synonyms (e.g., AWS = Amazon Web Services, ETL = data pipelines). For "X or Y," credit if either appears.
+
+Report coverage per tier so the user can see where high-weight gaps exist versus low-priority misses.
+
 ### Clarifying questions guidance
-Always include clarifying questions. Probe for:
-- Unreported metrics or outcomes the user might recall
-- Experience that could map to identified gaps
-- Ambiguous JD items worth clarifying with the user
-- Context about team size, scope, or impact not mentioned in materials
+Always include clarifying questions. Use these patterns:
+
+- **For each Partial or Missing Required qualification:** Ask whether the user has adjacent or unreported experience that could map to the gap. Example: "The JD requires Kubernetes — you mention Docker but not orchestration. Have you worked with Kubernetes, ECS, or similar in any capacity?"
+- **For bullets lacking metrics:** Probe for unreported numbers. Example: "Your role at [Company] mentions leading migrations but no scale. Can you estimate team size, number of systems, or timeline?"
+- **For ambiguous JD items:** Ask what the user thinks the employer means. Example: "The JD says 'experience with modern data stack' — based on the company/role, do you read that as a specific toolset (dbt, Snowflake, etc.) or a general philosophy?"
+- **For scope and impact:** Ask about team size, budget, geographic reach, or user base when not mentioned in materials. Example: "What was the size of the team/org you supported in this role?"
+- **For recency:** If a key skill appears only in older roles, ask if the user has recent unreported exposure.
+
+Aim for 3–6 questions. Prioritize questions whose answers would move a Partial to Matched or fill a high-tier keyword gap.
 
 ## JD Parsing Rules
 - **"X or Y" (alternatives):** Treat as one item; Matched if any alternative is evidenced (note which).
 - **"X and Y" (conjunctive):** Treat as separate items unless the JD clearly bundles them as one phrase.
 - **Credentials & constraints** (work authorization, clearance, location, travel %): Treat as Required.
 - **Years of experience** (e.g., "7+ years"): Treat as Required using documented dates; never invent tenure.
-- **No explicit Required/Preferred sections:** Derive a reasonable required list from responsibilities. Set `flags.derived_requirements_used = true`.
+- **No explicit Required/Preferred sections:** Derive a reasonable required list from responsibilities using this heuristic: any skill, technology, or domain expertise mentioned in connection with a core responsibility of the role should be treated as Required. Skills that appear only in aspirational or secondary context (e.g., "nice to have exposure to…", "bonus if…", or mentioned only in a team description rather than an individual duty) should be treated as Preferred. Set `flags.derived_requirements_used = true`.
+- **Implied requirements from responsibilities:** When a JD describes duties without labeling requirements (e.g., "You will build and maintain CI/CD pipelines"), extract the embedded skills (CI/CD, pipeline tooling) and treat them as Required. Apply this even when the JD has explicit Required/Preferred sections — responsibilities may surface additional implicit requirements not listed elsewhere.
 - **Keep table rows in the same order as the JD.**
 
-### Keyword coverage
-- Build a unique list from Required + Preferred (case-insensitive).
-- Match multi-word phrases as phrases before single tokens.
-- Credit common synonyms (e.g., AWS = Amazon Web Services, ETL = data pipelines).
-- For "X or Y," credit if either appears.
+## Resume Length & Bullet Distribution
 
-## Resume YAML Rules
+### Guiding principle
+A human reviewer will read this resume. It should be long enough to demonstrate depth for the candidate's experience level but short enough that nothing feels like filler. Recruiters spend more time on what you're doing now and skim older roles — bullet distribution should reflect that.
 
-### Formatting & Length
-- **Dates:** MMM YYYY.
-- **Locations:** City, ST; use "Remote (City, ST)" when applicable.
-- **ATS-friendly:** No tables/graphics; consistent abbreviations and headers.
-- **Total experience:** Compute from earliest start to most recent end; don't double-count overlaps.
-- **Page target:** 2 pages (3 only if >=18 years' experience).
-- **Word targets:**
-  - <10 years: ~475–650 words
-  - 10–17 years: ~850–1,050 words
-  - >=18 years: ~1,100–1,250 words (up to ~1,350 if 3rd page needed)
+### Page targets
+- <10 years of experience: 1–2 pages.
+- 10–17 years: 2 pages.
+- ≥18 years: 2–3 pages (3 only if density justifies it).
+
+### Word budget (guardrails, not hard ceilings)
+These exist to prevent bloated output. Treat them as a sanity check after drafting, not a target to hit:
+- <10 years: ~475–650 words
+- 10–17 years: ~850–1,050 words
+- ≥18 years: ~1,100–1,250 words (up to ~1,350 if 3rd page needed)
+
+If the draft exceeds the upper bound, cut lower-impact bullets from older roles first.
+
+### Bullet counts by role recency
+Assign bullets based on how recent the role is relative to the other selected roles, regardless of how many roles the user provides:
+
+| Role position | Bullet count | Rationale |
+|---|---|---|
+| Most recent / current | 4–6 | Deepest detail; this is what reviewers focus on |
+| 1st prior | 3–5 | Still substantial but tighter |
+| 2nd prior | 2–4 | Relevant highlights only |
+| 3rd prior and older | 1–3 | Brief proof of trajectory or niche relevance |
+
+Within each role, prioritize bullets by JD relevance — lead with the strongest alignment.
 
 ### Roles to include
-- Include the last **five chronological roles**.
-- Group multiple positions at one employer.
-- Within each company block, list roles in **reverse chronological order**.
-- If >5 roles, group micro-promotions and omit low-impact titles.
-- If fewer than four roles exist, include all available. Do not invent or pad with filler.
+Use only the roles the user has selected or provided. Do not add roles the user has not included. If the user provides fewer than three roles, include all of them — do not pad with filler.
+
+Group multiple positions at one employer into a single company block. Within each company block, list roles in reverse chronological order.
+
+### Total experience
+Compute from earliest start to most recent end across all provided roles; don't double-count overlapping tenures.
 
 ### Tense
 - **Present tense** for the current role, **past tense** for prior roles.
 
-### Bullet counts
-- **Current role:** 4–6 bullets.
-- **1st prior:** 3–5 bullets.
-- **2nd prior:** 2–4 bullets.
-- **3rd prior:** 1–3 bullets.
-- Keep bullets aligned to JD relevance.
+## Resume YAML Rules
+
+### Formatting
+- **Dates:** MMM YYYY.
+- **Locations:** City, ST; use "Remote (City, ST)" when applicable.
+- **ATS-friendly:** No tables/graphics; consistent abbreviations and headers.
 
 ### YAML validity
 - Ensure valid YAML syntax.
@@ -168,11 +197,14 @@ Always include clarifying questions. Probe for:
 
 ## YAML Schema
 
+Only include optional sections if the user's materials contain relevant data for that section. Do not output empty sections, empty headers, or placeholder content. If a section would be empty, omit the entire key.
+
 ```yaml
 resumeStructure:
   header:
     line1: "Full Name"
     line2: "email@example.com | (555) 555-5555 | City, ST | https://portfolio-url | https://linkedin-url"
+  summary: "2–3 sentence professional summary tailored to the target role. Include only if the candidate's background benefits from framing (e.g., career pivots, senior leadership, cross-domain experience)."  # optional — omit if unnecessary
   workExperience:
     header: "Work Experience"
     companies:
@@ -182,17 +214,33 @@ resumeStructure:
             originalTitle: "Original Internal Title" # include only if the aligned title differs
             bullets:
               - description: "Outcome-first achievement with quantification and central tech inline (e.g., '… improved uptime to 99.95% using Terraform on AWS; reduced cost 23%')."
-              # repeat bullet objects to meet role-specific counts
+              # repeat bullet objects per role-specific counts
           # add additional role objects for the same company if applicable (reverse-chronological)
-      # repeat company blocks until the last five roles are covered
+      # repeat company blocks for each role the user provided
   education:
     header: "Education"
     universityNameLine: "University Name"
     degreeInfoLine: "Degree | City, ST"
+  publications:  # optional — include only if user materials contain publications
+    header: "Publications"
+    items:
+      - "Author(s). Title. Venue/Journal, Year."
+  patents:  # optional — include only if user materials contain patents
+    header: "Patents"
+    items:
+      - "Patent title — Patent number (Year). Brief description if relevant to target role."
+  presentations:  # optional — include only if user materials contain talks or speaking engagements
+    header: "Presentations & Speaking"
+    items:
+      - "Talk title — Event/Conference, Year. Brief context if relevant."
+  volunteerLeadership:  # optional — include only if user materials contain volunteer or community work relevant to the target role
+    header: "Volunteer & Leadership"
+    items:
+      - "Role — Organization, Dates. One-line description of impact."
   certificationsSkills:
     header: "Certifications and Skills"
     bullets:
-      - certifications: "Comma-delimited list (optional)"
+      - certifications: "Comma-delimited list" # omit this bullet entirely if no certifications exist
       - skills: "Comma-delimited JD-aligned skills (consolidate tech; avoid repeats)"
 ```
 
@@ -215,7 +263,6 @@ resumeStructure:
   certificationsSkills:
     header: "Certifications and Skills"
     bullets:
-      - certifications: ""
       - skills: ""
 ```
 

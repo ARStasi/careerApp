@@ -12,3 +12,8 @@ def get_instructions() -> str:
     if content.startswith("markdown\n"):
         content = content[len("markdown\n"):]
     return content
+
+
+def save_instructions(content: str) -> None:
+    with open(_INSTRUCTIONS_PATH, "w", encoding="utf-8") as f:
+        f.write(content)

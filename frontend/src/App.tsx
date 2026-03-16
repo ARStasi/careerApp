@@ -10,6 +10,7 @@ import {
   IconFileText,
   IconNotes,
   IconBriefcase,
+  IconRobot,
 } from '@tabler/icons-react';
 import Dashboard from './pages/Dashboard';
 import ProfilePage from './pages/ProfilePage';
@@ -20,6 +21,7 @@ import CertificationsPage from './pages/CertificationsPage';
 import WorkflowPage from './pages/WorkflowPage';
 import KnowledgeBasePage from './pages/KnowledgeBasePage';
 import ApplicationsPage from './pages/ApplicationsPage';
+import InstructionsPage from './pages/InstructionsPage';
 
 const navItems = [
   { label: 'Dashboard', path: '/', icon: IconHome },
@@ -29,6 +31,7 @@ const navItems = [
   { label: 'Certifications', path: '/certifications', icon: IconCertificate },
   { label: 'Knowledge Base', path: '/knowledge', icon: IconNotes },
   { label: 'Applications', path: '/applications', icon: IconBriefcase },
+  { label: 'AI Instructions', path: '/instructions', icon: IconRobot },
   { label: 'Resume Workflow', path: '/workflow', icon: IconFileText },
 ];
 
@@ -62,6 +65,7 @@ export default function App() {
           <Route path="/certifications" element={<CertificationsPage />} />
           <Route path="/knowledge" element={<KnowledgeBasePage />} />
           <Route path="/applications" element={<ApplicationsPage />} />
+          <Route path="/instructions" element={<InstructionsPage />} />
           <Route path="/workflow" element={<WorkflowPage />} />
         </Routes>
       </AppShell.Main>

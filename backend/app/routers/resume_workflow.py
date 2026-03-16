@@ -1,14 +1,19 @@
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.schemas import ExportRequest, YamlConvertRequest, YamlValidateRequest
 from app.services.export_service import generate_export_document
 from app.services.yaml_to_word import convert_yaml_to_word_bytes
-from app.services.instructions_service import get_instructions
+from app.services.instructions_service import get_instructions, save_instructions
 from app.services.output_persistence_service import persist_resume_output
 import io
 import yaml
+
+
+class InstructionsUpdateRequest(BaseModel):
+    content: str
 
 router = APIRouter()
 
@@ -29,6 +34,12 @@ def export_document(data: ExportRequest, db: Session = Depends(get_db)):
 @router.get("/workflow/instructions")
 def get_instructions_endpoint():
     return {"content": get_instructions()}
+
+
+@router.put("/workflow/instructions")
+def update_instructions_endpoint(data: InstructionsUpdateRequest):
+    save_instructions(data.content)
+    return {"content": data.content}
 
 
 @router.post("/workflow/convert-yaml")
