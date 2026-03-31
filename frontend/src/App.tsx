@@ -8,7 +8,6 @@ import {
   IconSchool,
   IconCertificate,
   IconFileText,
-  IconNotes,
   IconBriefcase,
   IconRobot,
   IconFileExport,
@@ -20,7 +19,6 @@ import RoleDetailPage from './pages/RoleDetailPage';
 import EducationPage from './pages/EducationPage';
 import CertificationsPage from './pages/CertificationsPage';
 import WorkflowPage from './pages/WorkflowPage';
-import KnowledgeBasePage from './pages/KnowledgeBasePage';
 import ApplicationsPage from './pages/ApplicationsPage';
 import InstructionsPage from './pages/InstructionsPage';
 import CareerExportPage from './pages/CareerExportPage';
@@ -31,7 +29,6 @@ const navItems = [
   { label: 'Companies', path: '/companies', icon: IconBuilding },
   { label: 'Education', path: '/education', icon: IconSchool },
   { label: 'Certifications', path: '/certifications', icon: IconCertificate },
-  { label: 'Knowledge Base', path: '/knowledge', icon: IconNotes },
   { label: 'Applications', path: '/applications', icon: IconBriefcase },
   { label: 'Career Export', path: '/career-export', icon: IconFileExport },
   { label: 'AI Instructions', path: '/instructions', icon: IconRobot },
@@ -66,7 +63,6 @@ export default function App() {
           <Route path="/companies/:companyId/roles/:roleId" element={<RoleDetailPage />} />
           <Route path="/education" element={<EducationPage />} />
           <Route path="/certifications" element={<CertificationsPage />} />
-          <Route path="/knowledge" element={<KnowledgeBasePage />} />
           <Route path="/applications" element={<ApplicationsPage />} />
           <Route path="/career-export" element={<CareerExportPage />} />
           <Route path="/instructions" element={<InstructionsPage />} />
