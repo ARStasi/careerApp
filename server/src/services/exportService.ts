@@ -117,7 +117,7 @@ export function generateExportDocument(
         .where(eq(accomplishments.role_id, role.id))
         .orderBy(asc(accomplishments.sort_order))
         .all()
-        .filter(a => a.category === 'resume_bullet');
+        .filter(a => a.category?.toUpperCase() === 'RESUME_BULLET');
       if (bullets.length > 0) {
         sections.push('**Key Accomplishments:**');
         for (const acc of bullets) {
@@ -134,7 +134,7 @@ export function generateExportDocument(
           .where(eq(accomplishments.role_id, role.id))
           .orderBy(asc(accomplishments.sort_order))
           .all()
-          .filter(a => a.category === 'supporting_detail');
+          .filter(a => a.category?.toUpperCase() === 'SUPPORTING_DETAIL');
         if (supporting.length > 0) {
           sections.push('**Supporting Details (additional context for AI):**');
           for (const acc of supporting) {

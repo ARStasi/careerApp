@@ -8,7 +8,7 @@ Status legend:
 
 ## App Snapshot (for fast AI context)
 
-- Stack: React + TypeScript (Vite, Mantine, React Query) frontend; FastAPI + SQLAlchemy + SQLite backend.
+- Stack: React + TypeScript (Vite, Mantine, React Query) frontend; Node.js + Hono + Drizzle + SQLite backend for the web app.
 - Data store: SQLite database (`backend/career_data.db`) with optional override via `CAREER_DB_PATH`.
 - Core domain: career profile management + resume assembly workflow that exports markdown, validates YAML, and converts YAML to `.docx`.
 
@@ -19,8 +19,8 @@ Status legend:
 - [x] Combined dev launcher starts frontend and backend together (`npm run dev`).
 - [x] Dedicated backend and frontend dev commands (`npm run dev:backend`, `npm run dev:frontend`).
 - [x] Dev script validates Node and Python prerequisites before boot.
-- [x] FastAPI backend with local CORS configuration for Vite dev hosts.
-- [x] SQLAlchemy table auto-creation on API startup.
+- [x] Node backend with local CORS configuration for Vite dev hosts.
+- [x] SQLite-backed API for web app data access.
 
 ### Global App UI
 
@@ -182,7 +182,6 @@ Status legend:
 
 ### Quality Automation
 
-- [x] Backend API smoke tests (`backend/tests/test_api_smoke.py`).
 - [x] GitHub Actions CI for backend tests plus frontend lint/build (`.github/workflows/ci.yml`).
 
 ## Backlog (Add New Features Here)

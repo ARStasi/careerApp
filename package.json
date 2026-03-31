@@ -5,7 +5,7 @@
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:frontend\"",
     "dev:server": "npm --prefix server run dev",
     "dev:frontend": "npm --prefix frontend run dev -- --host 127.0.0.1 --port 5173",
-    "dev:backend": "cd backend && python3 -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000"
+    "dev:backend": "npm run dev:server"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"

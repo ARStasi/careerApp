@@ -1,11 +1,40 @@
 import { Hono } from 'hono';
 import yaml from 'js-yaml';
+import { desc } from 'drizzle-orm';
+import { db } from '../db/index.js';
+import { roles } from '../db/schema.js';
 import { generateExportDocument } from '../services/exportService.js';
 import { getInstructions, saveInstructions } from '../services/instructionsService.js';
 import { convertYamlToWordBytes } from '../services/yamlToWord.js';
 import { persistResumeOutput } from '../services/outputPersistenceService.js';
 
 const router = new Hono();
+
+router.post('/workflow/quick-export', async (c) => {
+  const body = await c.req.json() as {
+    include_supporting?: boolean;
+    include_awards?: boolean;
+    include_presentations?: boolean;
+    include_responsibilities?: boolean;
+  };
+
+  const recentRoles = db.select().from(roles).orderBy(desc(roles.start_date)).limit(5).all();
+  const roleIds = recentRoles.map((r) => r.id);
+
+  const content = generateExportDocument(
+    roleIds,
+    body.include_supporting ?? true,
+    body.include_awards ?? true,
+    body.include_presentations ?? true,
+    body.include_responsibilities ?? true,
+  );
+
+  return c.json({
+    content,
+    role_ids: roleIds,
+    roles: recentRoles.map((r) => ({ id: r.id, title: r.title, start_date: r.start_date, end_date: r.end_date })),
+  });
+});
 
 router.post('/workflow/export-document', async (c) => {
   const body = await c.req.json() as {

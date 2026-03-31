@@ -1,7 +1,12 @@
 import { Hono } from 'hono';
 import { db } from '../db/index.js';
 import { accomplishments } from '../db/schema.js';
-import { eq, asc, inArray } from 'drizzle-orm';
+import { eq, asc } from 'drizzle-orm';
+
+// SQLAlchemy stored enum names (RESUME_BULLET); normalize to lowercase values for the frontend
+function normalize(row: typeof accomplishments.$inferSelect) {
+  return { ...row, category: row.category?.toLowerCase() ?? row.category };
+}
 
 const router = new Hono();
 
@@ -11,7 +16,7 @@ router.get('/roles/:role_id/accomplishments', async (c) => {
     .where(eq(accomplishments.role_id, roleId))
     .orderBy(asc(accomplishments.sort_order))
     .all();
-  return c.json(rows);
+  return c.json(rows.map(normalize));
 });
 
 router.post('/roles/:role_id/accomplishments', async (c) => {
@@ -20,7 +25,7 @@ router.post('/roles/:role_id/accomplishments', async (c) => {
   const [created] = await db.insert(accomplishments)
     .values({ ...body, role_id: roleId })
     .returning();
-  return c.json(created, 201);
+  return c.json(normalize(created), 201);
 });
 
 router.put('/accomplishments/:id', async (c) => {
@@ -31,7 +36,7 @@ router.put('/accomplishments/:id', async (c) => {
     .where(eq(accomplishments.id, id))
     .returning();
   if (!updated) return c.json({ detail: 'Not found' }, 404);
-  return c.json(updated);
+  return c.json(normalize(updated));
 });
 
 router.delete('/accomplishments/:id', async (c) => {
@@ -57,7 +62,7 @@ router.patch('/roles/:role_id/accomplishments/reorder', async (c) => {
     .where(eq(accomplishments.role_id, roleId))
     .orderBy(asc(accomplishments.sort_order))
     .all();
-  return c.json(rows);
+  return c.json(rows.map(normalize));
 });
 
 export default router;

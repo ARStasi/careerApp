@@ -5,6 +5,15 @@ import { eq, desc } from 'drizzle-orm';
 
 const router = new Hono();
 
+router.get('/roles', async (c) => {
+  const roleRows = db.select().from(roles).orderBy(desc(roles.start_date)).all();
+  const result = roleRows.map(r => {
+    const company = db.select().from(companies).where(eq(companies.id, r.company_id)).limit(1).all()[0];
+    return { ...r, company_name: company?.name ?? null };
+  });
+  return c.json(result);
+});
+
 router.get('/companies/:company_id/roles', async (c) => {
   const companyId = parseInt(c.req.param('company_id'));
   const rows = db.select().from(roles)

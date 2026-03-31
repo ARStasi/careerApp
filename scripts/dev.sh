@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-BACKEND_DIR="$ROOT_DIR/backend"
+SERVER_DIR="$ROOT_DIR/server"
 FRONTEND_DIR="$ROOT_DIR/frontend"
 
 if ! command -v npm >/dev/null 2>&1; then
@@ -21,18 +21,9 @@ if ! node -e "const [maj,min]=process.versions.node.split('.').map(Number); proc
   exit 1
 fi
 
-if [[ -x "$BACKEND_DIR/.venv/bin/python" ]]; then
-  BACKEND_PYTHON="$BACKEND_DIR/.venv/bin/python"
-elif command -v python3 >/dev/null 2>&1; then
-  BACKEND_PYTHON="python3"
-else
-  echo "Error: python3 is required but was not found in PATH."
-  exit 1
-fi
-
-if ! "$BACKEND_PYTHON" -c "import uvicorn" >/dev/null 2>&1; then
-  echo "Error: Python package 'uvicorn' is not installed for $BACKEND_PYTHON."
-  echo "Install backend dependencies with: pip install -r backend/requirements.txt"
+if [[ ! -d "$SERVER_DIR/node_modules" ]]; then
+  echo "Error: server dependencies are not installed."
+  echo "Install them with: npm --prefix server install"
   exit 1
 fi
 
@@ -43,10 +34,10 @@ cleanup() {
 
 trap cleanup EXIT INT TERM
 
-echo "Starting backend on http://localhost:8000 ..."
+echo "Starting Node backend on http://localhost:8000 ..."
 (
-  cd "$BACKEND_DIR"
-  exec "$BACKEND_PYTHON" -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+  cd "$SERVER_DIR"
+  exec npm run dev
 ) &
 BACKEND_PID=$!
 

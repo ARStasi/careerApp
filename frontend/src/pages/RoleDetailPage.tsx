@@ -43,6 +43,10 @@ function normalizeDate(value?: string | null) {
   return value ? value : undefined;
 }
 
+function normalizeAccomplishmentCategory(category?: string | null) {
+  return (category || 'resume_bullet').trim().toLowerCase();
+}
+
 function reorderIds(ids: number[], sourceId: number, targetId: number) {
   const fromIndex = ids.indexOf(sourceId);
   const toIndex = ids.indexOf(targetId);
@@ -1024,7 +1028,13 @@ function OverviewTab({ roleId, role }: { roleId: number; role: Role }) {
   });
 
   const sortedAccomplishments = useMemo(
-    () => [...(accomplishments || [])].sort((a, b) => a.sort_order - b.sort_order),
+    () =>
+      [...(accomplishments || [])]
+        .map((item) => ({
+          ...item,
+          category: normalizeAccomplishmentCategory(item.category) as Accomplishment['category'],
+        }))
+        .sort((a, b) => a.sort_order - b.sort_order),
     [accomplishments]
   );
   const sortedResponsibilities = useMemo(

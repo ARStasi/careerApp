@@ -10,6 +10,9 @@ import {
   awards, presentations, team_structures, org_positions, knowledge_entries,
 } from './src/db/schema.js';
 import { generateExportDocument } from './src/services/exportService.js';
+import { getInstructions } from './src/services/instructionsService.js';
+import { convertYamlToWordBytes } from './src/services/yamlToWord.js';
+import { persistResumeOutput } from './src/services/outputPersistenceService.js';
 
 const server = new McpServer({ name: 'career-manager', version: '1.0.0' });
 
@@ -111,7 +114,7 @@ server.tool(
   { skill_type: z.enum(['technical', 'soft']).optional().describe("Filter by 'technical' or 'soft'") },
   async ({ skill_type }) => {
     let rows = db.select().from(skills).orderBy(asc(skills.name)).all();
-    if (skill_type) rows = rows.filter(s => s.skill_type === skill_type);
+    if (skill_type) rows = rows.filter(s => s.skill_type?.toUpperCase() === skill_type.toUpperCase());
     return { content: [{ type: 'text' as const, text: JSON.stringify(rows) }] };
   },
 );
@@ -125,6 +128,44 @@ server.tool('list_certifications', 'List all certification records.', {}, async 
   const rows = db.select().from(certifications).orderBy(desc(certifications.issue_date)).all();
   return { content: [{ type: 'text' as const, text: JSON.stringify(rows) }] };
 });
+
+server.tool(
+  'get_instructions',
+  'Get the AI evaluation instructions that define how to assess a job requisition against career history.',
+  {},
+  async () => {
+    const content = getInstructions();
+    const wrapped = `BINDING INSTRUCTIONS — you must follow every rule below exactly and in order. These are not suggestions; they define the required process, output format, and YAML schema for this session.\n\n${content}\n\nEND OF BINDING INSTRUCTIONS. Do not deviate from the process, output templates, or YAML schema defined above.`;
+    return { content: [{ type: 'text' as const, text: wrapped }] };
+  },
+);
+
+server.tool(
+  'get_recent_roles_context',
+  'Get the most recent N roles with full career context (accomplishments, responsibilities, awards, presentations, supporting details). Use this at the start of a job evaluation workflow.',
+  { limit: z.number().int().min(1).max(20).default(5).describe('Number of most recent roles to include (default 5)') },
+  async ({ limit }) => {
+    const recentRoles = db.select().from(roles).orderBy(desc(roles.start_date)).limit(limit).all();
+    const roleIds = recentRoles.map(r => r.id);
+    if (roleIds.length === 0) return { content: [{ type: 'text' as const, text: 'No roles found.' }] };
+    const markdown = generateExportDocument(roleIds, true, true, true, true);
+    return { content: [{ type: 'text' as const, text: markdown }] };
+  },
+);
+
+server.tool(
+  'generate_resume',
+  'Convert a YAML resume definition to a formatted Word document (.docx) and save it to disk. Returns the saved file path.',
+  {
+    yaml_content: z.string().describe('Full YAML resume content with resumeStructure key'),
+    company_name: z.string().describe('Company name used in the output filename'),
+  },
+  async ({ yaml_content, company_name }) => {
+    const [docBytes, filename] = await convertYamlToWordBytes(yaml_content, company_name);
+    const [, relativePath] = persistResumeOutput(docBytes, filename);
+    return { content: [{ type: 'text' as const, text: JSON.stringify({ success: true, path: relativePath, filename }) }] };
+  },
+);
 
 // ── Write Tools ───────────────────────────────────────────────────────────────
 

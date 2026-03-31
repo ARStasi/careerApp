@@ -384,7 +384,7 @@ export async function convertYamlToWordBytes(
   }
 
   const today = new Date().toISOString().split('T')[0];
-  const filename = `${name} Resume - ${companyName} - ${today}.docx`;
+  const filename = `${name} - ${companyName} - ${today}.docx`;
 
   return [buffer, filename];
 }
