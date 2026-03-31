@@ -16,6 +16,7 @@ router.post('/workflow/quick-export', async (c) => {
     include_awards?: boolean;
     include_presentations?: boolean;
     include_responsibilities?: boolean;
+    include_team_narrative?: boolean;
   };
 
   const recentRoles = db.select().from(roles).orderBy(desc(roles.start_date)).limit(5).all();
@@ -23,10 +24,11 @@ router.post('/workflow/quick-export', async (c) => {
 
   const content = generateExportDocument(
     roleIds,
-    body.include_supporting ?? true,
-    body.include_awards ?? true,
-    body.include_presentations ?? true,
+    body.include_supporting ?? false,
+    body.include_awards ?? false,
+    body.include_presentations ?? false,
     body.include_responsibilities ?? true,
+    body.include_team_narrative ?? false,
   );
 
   return c.json({
@@ -43,14 +45,16 @@ router.post('/workflow/export-document', async (c) => {
     include_awards?: boolean;
     include_presentations?: boolean;
     include_responsibilities?: boolean;
+    include_team_narrative?: boolean;
   };
 
   const content = generateExportDocument(
     body.role_ids,
-    body.include_supporting ?? true,
-    body.include_awards ?? true,
-    body.include_presentations ?? true,
+    body.include_supporting ?? false,
+    body.include_awards ?? false,
+    body.include_presentations ?? false,
     body.include_responsibilities ?? true,
+    body.include_team_narrative ?? false,
   );
 
   return c.json({ content });

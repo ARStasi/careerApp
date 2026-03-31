@@ -91,18 +91,20 @@ server.tool(
   'Export full career context as a markdown document for the given role IDs.',
   {
     role_ids: z.array(z.number()).describe('Role IDs to include'),
-    include_supporting: z.boolean().optional().default(true),
-    include_awards: z.boolean().optional().default(true),
-    include_presentations: z.boolean().optional().default(true),
+    include_supporting: z.boolean().optional().default(false),
+    include_awards: z.boolean().optional().default(false),
+    include_presentations: z.boolean().optional().default(false),
     include_responsibilities: z.boolean().optional().default(true),
+    include_team_narrative: z.boolean().optional().default(false),
   },
-  async ({ role_ids, include_supporting, include_awards, include_presentations, include_responsibilities }) => {
+  async ({ role_ids, include_supporting, include_awards, include_presentations, include_responsibilities, include_team_narrative }) => {
     const markdown = generateExportDocument(
       role_ids,
-      include_supporting ?? true,
-      include_awards ?? true,
-      include_presentations ?? true,
+      include_supporting ?? false,
+      include_awards ?? false,
+      include_presentations ?? false,
       include_responsibilities ?? true,
+      include_team_narrative ?? false,
     );
     return { content: [{ type: 'text' as const, text: markdown }] };
   },
@@ -148,7 +150,7 @@ server.tool(
     const recentRoles = db.select().from(roles).orderBy(desc(roles.start_date)).limit(limit).all();
     const roleIds = recentRoles.map(r => r.id);
     if (roleIds.length === 0) return { content: [{ type: 'text' as const, text: 'No roles found.' }] };
-    const markdown = generateExportDocument(roleIds, true, true, true, true);
+    const markdown = generateExportDocument(roleIds, false, false, false, true, false);
     return { content: [{ type: 'text' as const, text: markdown }] };
   },
 );

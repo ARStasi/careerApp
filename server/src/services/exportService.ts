@@ -28,10 +28,11 @@ function formatLocation(city: string | null, state: string | null, isRemote: boo
 
 export function generateExportDocument(
   roleIds: number[],
-  includingSupporting = true,
-  includeAwards = true,
-  includePresentations = true,
+  includingSupporting = false,
+  includeAwards = false,
+  includePresentations = false,
   includeResponsibilities = true,
+  includeTeamNarrative = false,
 ): string {
   const sections: string[] = [];
 
@@ -89,12 +90,16 @@ export function generateExportDocument(
       // Team structure
       const ts = db.select().from(team_structures).where(eq(team_structures.role_id, role.id)).limit(1).all()[0];
       if (ts) {
-        const teamInfo: string[] = [];
-        if (ts.direct_reports) teamInfo.push(`${ts.direct_reports} direct reports`);
-        if (ts.team_size) teamInfo.push(`team of ${ts.team_size}`);
-        if (ts.responsibilities) teamInfo.push(ts.responsibilities);
-        if (teamInfo.length > 0) {
-          sections.push(`**Team Context:** ${teamInfo.join('; ')}`);
+        const compactParts: string[] = [];
+        if (ts.direct_reports) compactParts.push(`${ts.direct_reports} direct reports`);
+        if (ts.team_size) compactParts.push(`team of ${ts.team_size}`);
+        if (compactParts.length > 0) {
+          sections.push(`**Team Context:** ${compactParts.join('; ')}`);
+          sections.push('');
+        }
+        if (includeTeamNarrative && ts.responsibilities) {
+          sections.push('**Team Structure Detail:**');
+          sections.push(ts.responsibilities);
           sections.push('');
         }
       }
