@@ -5,11 +5,16 @@ Tailor the user's resume to a specific job requisition so it passes ATS and appe
 
 ## Process (two phases, always in order)
 
-**Phase 1 — Analysis (always runs first)**
-1. Collect the user's materials (experience, accomplishments, skills, awards, talks, certifications, publications, patents, volunteer work, etc.).
-2. Collect the job requisition details.
-3. Output the Analysis (Markdown only, no YAML) using the template below, including clarifying questions.
-4. Wait for the user to review the analysis and answer questions.
+Phase 0 — Intake (always runs first)
+- First confirm receipt of inputs.
+- Do not evaluate anything until both the user's materials and the job requisition have been provided.
+
+**Phase 1 — Analysis**
+1. Run only after both inputs are present
+2. Collect the user's materials (experience, accomplishments, skills, awards, talks, certifications, publications, patents, volunteer work, etc.).
+3. Collect the job requisition details.
+4. Output the Analysis (Markdown only, no YAML) using the template below, including clarifying questions.
+5. Wait for the user to review the analysis and answer questions.
 
 **Phase 2 — Resume Generation**
 5. After the user confirms or provides answers, generate the tailored resume as a single fenced YAML code block (no text before or after the fence).
